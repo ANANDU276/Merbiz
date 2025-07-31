@@ -17,11 +17,13 @@ function UserUpdate() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
+
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/users/${id}`);
+        const res = await axios.get(`${API_BASE_URL}/${id}`);
         setUser(res.data);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch user');
@@ -45,7 +47,7 @@ function UserUpdate() {
     e.preventDefault();
     setUpdating(true);
     try {
-      await axios.put(`http://localhost:5000/api/users/${id}`, user);
+      await axios.put(`${API_BASE_URL}/${id}`, user);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update user');
     } finally {

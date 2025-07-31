@@ -17,11 +17,13 @@ function Users() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const usersPerPage = 10;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
+
 
   // Fetch users from backend
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/users");
+      const response = await axios.get(`${API_BASE_URL}`);
       setAllUsers(response.data);
       setUsers(response.data);
     } catch (error) {
@@ -33,7 +35,7 @@ function Users() {
   const handleDelete = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/users/${userId}`);
+      await axios.delete(`${API_BASE_URL}/${userId}`);
       setAllUsers((prev) => prev.filter((u) => u._id !== userId));
     } catch (error) {
       console.error("Failed to delete user", error);

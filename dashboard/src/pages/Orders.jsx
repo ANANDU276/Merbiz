@@ -17,13 +17,14 @@ function Orders() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_ORDER;
 
   const ordersPerPage = 5;
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/order");
+        const res = await axios.get(`${API_BASE_URL}`);
         setOrders(res.data);
       } catch (err) {
         setError("Failed to fetch orders");
@@ -326,7 +327,7 @@ function StatusSelector({ currentStatus, orderId, onStatusChange }) {
     setStatus(newStatus);
     setLoading(true);
     try {
-      await axios.put(`http://localhost:5000/api/order/${orderId}/status`, {
+      await axios.put(`${API_BASE_URL}/${orderId}/status`, {
         status: newStatus,
       });
       onStatusChange(orderId, newStatus);
@@ -365,7 +366,7 @@ function ReturnStatusSelector({ currentStatus, orderId, onStatusChange }) {
     setLoading(true);
     try {
 
-      await axios.put(`http://localhost:5000/api/order/${orderId}/return/status`, {
+      await axios.put(`${API_BASE_URL}/${orderId}/return/status`, {
         status: newStatus,
       });
       console.log(newStatus);

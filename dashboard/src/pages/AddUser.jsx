@@ -16,6 +16,8 @@ function AddUser() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,7 +40,7 @@ function AddUser() {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/users', user);
+      const response = await axios.post(`${API_BASE_URL}`, user);
       navigate(`/users/userdetail/${response.data._id}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create user');
