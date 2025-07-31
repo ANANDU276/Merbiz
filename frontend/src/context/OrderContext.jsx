@@ -5,7 +5,8 @@ import AuthContext from "./AuthContext";
 
 const OrderContext = createContext();
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_ORDER;
+
 
 export const OrderProvider = ({ children }) => {
   const { user, loading: authLoading } = useContext(AuthContext);
@@ -30,7 +31,7 @@ export const OrderProvider = ({ children }) => {
   const fetchOrders = async (email) => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/order/user?email=${email}`, {
+      const res = await axios.get(`${API_BASE_URL}/user?email=${email}`, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
         },
@@ -50,7 +51,7 @@ export const OrderProvider = ({ children }) => {
     setCreateLoading(true);
     setCreateError(null);
     try {
-      const res = await axios.post(`${API_BASE_URL}/order`, orderData, {
+      const res = await axios.post(`${API_BASE_URL}`, orderData, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
         },
@@ -72,7 +73,7 @@ export const OrderProvider = ({ children }) => {
     setReturnError(null);
     try {
       const res = await axios.put(
-        `${API_BASE_URL}/order/${orderId}/return`,
+        `${API_BASE_URL}/${orderId}/return`,
         { reason },
         {
           headers: {
