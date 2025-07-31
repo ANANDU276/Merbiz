@@ -14,7 +14,7 @@ require("dotenv").config();
 const app = express();
 
 // ✅ Custom CORS middleware
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "http://localhost:4173",];
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
