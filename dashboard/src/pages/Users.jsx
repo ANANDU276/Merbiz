@@ -19,7 +19,6 @@ function Users() {
   const usersPerPage = 10;
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
 
-
   // Fetch users from backend
   const fetchUsers = async () => {
     try {
@@ -53,8 +52,8 @@ function Users() {
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Search filter
@@ -62,10 +61,12 @@ function Users() {
     if (searchQuery.trim() === "") {
       setUsers(allUsers);
     } else {
-      const filtered = allUsers.filter((user) =>
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (user.location && user.location.toLowerCase().includes(searchQuery.toLowerCase()))
+      const filtered = allUsers.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (user.location &&
+            user.location.toLowerCase().includes(searchQuery.toLowerCase()))
       );
       setUsers(filtered);
     }
@@ -127,7 +128,10 @@ function Users() {
             title="Avg. Orders"
             value={
               allUsers.length > 0
-                ? (allUsers.reduce((sum, user) => sum + user.orders, 0) / allUsers.length).toFixed(1)
+                ? (
+                    allUsers.reduce((sum, user) => sum + user.orders, 0) /
+                    allUsers.length
+                  ).toFixed(1)
                 : 0
             }
             icon="📦"
@@ -139,7 +143,12 @@ function Users() {
             title="Avg. Spend"
             value={
               allUsers.length > 0
-                ? (allUsers.reduce((sum, user) => sum + (user.totalSpent || 0), 0) / allUsers.length).toFixed(2)
+                ? (
+                    allUsers.reduce(
+                      (sum, user) => sum + (user.totalSpent || 0),
+                      0
+                    ) / allUsers.length
+                  ).toFixed(2)
                 : 0
             }
             icon="💰"
@@ -172,26 +181,37 @@ function Users() {
               <thead className="bg-gray-50">
                 <tr>
                   <TableHeader>Customer</TableHeader>
-                  <TableHeader className="hidden sm:table-cell">Contact</TableHeader>
-                  <TableHeader className="hidden md:table-cell">Location</TableHeader>
+                  <TableHeader className="hidden sm:table-cell">
+                    Contact
+                  </TableHeader>
+                  <TableHeader className="hidden md:table-cell">
+                    Location
+                  </TableHeader>
                   <TableHeader>Orders</TableHeader>
-                  <TableHeader className="hidden lg:table-cell">Total Spent</TableHeader>
-                  <TableHeader className="hidden xl:table-cell">Member Since</TableHeader>
+                  <TableHeader className="hidden lg:table-cell">
+                    Total Spent
+                  </TableHeader>
+                  <TableHeader className="hidden xl:table-cell">
+                    Member Since
+                  </TableHeader>
                   <TableHeader align="right">Actions</TableHeader>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentUsers.length > 0 ? (
                   currentUsers.map((user) => (
-                    <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={user._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-3 py-3 md:px-4 md:py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                            {user.name?.charAt(0) || 'U'}
+                            {user.name?.charAt(0) || "U"}
                           </div>
                           <div className="ml-2 md:ml-3">
                             <div className="text-sm font-medium text-gray-900 truncate max-w-[100px] md:max-w-[150px]">
-                              {user.name || 'Unknown'}
+                              {user.name || "Unknown"}
                             </div>
                             <div className="text-xs text-gray-500">
                               ID: {user._id.slice(-6)}
@@ -206,7 +226,7 @@ function Users() {
                       </td>
                       <td className="px-3 py-3 md:px-4 md:py-4 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
                         <div className="truncate max-w-[100px] md:max-w-[150px]">
-                          {user.location || 'N/A'}
+                          {user.location || "N/A"}
                         </div>
                       </td>
                       <td className="px-3 py-3 md:px-4 md:py-4 whitespace-nowrap">
@@ -219,23 +239,32 @@ function Users() {
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >
-                          {user.orders || 0} {isMobile ? '' : 'orders'}
+                          {user.orders || 0} {isMobile ? "" : "orders"}
                         </span>
                       </td>
                       <td className="px-3 py-3 md:px-4 md:py-4 whitespace-nowrap text-sm font-medium text-gray-900 hidden lg:table-cell">
                         ${(user.totalSpent || 0).toFixed(2)}
                       </td>
                       <td className="px-3 py-3 md:px-4 md:py-4 whitespace-nowrap text-sm text-gray-500 hidden xl:table-cell">
-                        {user.joinDate ? new Date(user.joinDate).toLocaleDateString() : 'N/A'}
+                        {user.joinDate
+                          ? new Date(user.joinDate).toLocaleDateString()
+                          : "N/A"}
                       </td>
                       <td className="px-3 py-3 md:px-4 md:py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <ActionButtons userId={user._id} onDelete={handleDelete} isMobile={isMobile} />
+                        <ActionButtons
+                          userId={user._id}
+                          onDelete={handleDelete}
+                          isMobile={isMobile}
+                        />
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                    <td
+                      colSpan="7"
+                      className="px-6 py-4 text-center text-gray-500"
+                    >
                       No users found
                     </td>
                   </tr>
@@ -325,7 +354,9 @@ function StatCard({ title, value, icon, trend, change, isDecimal = false }) {
     <div className="bg-white rounded-lg md:rounded-xl shadow-sm p-3 md:p-4">
       <div className="flex justify-between">
         <div>
-          <p className="text-xs md:text-sm font-medium text-gray-500">{title}</p>
+          <p className="text-xs md:text-sm font-medium text-gray-500">
+            {title}
+          </p>
           <p className="text-lg md:text-xl font-bold text-gray-800 mt-1">
             {formatValue(value)}
           </p>

@@ -1,40 +1,46 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FaSpinner, FaSave, FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import {
+  FaSpinner,
+  FaSave,
+  FaArrowLeft,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 
 function AddUser() {
   const navigate = useNavigate();
   const [user, setUser] = useState({
-    name: '',
-    email: '',
-    password: '',
-    location: '',
+    name: "",
+    email: "",
+    password: "",
+    location: "",
     orders: 0,
-    totalSpent: 0
+    totalSpent: 0,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser(prev => ({
+    setUser((prev) => ({
       ...prev,
-      [name]: name === 'orders' || name === 'totalSpent' ? Number(value) : value
+      [name]:
+        name === "orders" || name === "totalSpent" ? Number(value) : value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
+    setError("");
 
     // Basic client-side validation
     if (!user.password || user.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       setSubmitting(false);
       return;
     }
@@ -43,14 +49,14 @@ function AddUser() {
       const response = await axios.post(`${API_BASE_URL}`, user);
       navigate(`/users/userdetail/${response.data._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create user');
+      setError(err.response?.data?.message || "Failed to create user");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/users');
+    navigate("/users");
   };
 
   const togglePasswordVisibility = () => {
@@ -62,11 +68,13 @@ function AddUser() {
       <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6 md:p-8">
         <div className="flex items-center space-x-4 mb-6">
           <div className="h-14 w-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
-            <span>{user.name?.charAt(0) || '+'}</span>
+            <span>{user.name?.charAt(0) || "+"}</span>
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-800">Add New User</h1>
-            <p className="text-sm text-gray-500">Create a new customer profile</p>
+            <p className="text-sm text-gray-500">
+              Create a new customer profile
+            </p>
           </div>
         </div>
 
@@ -91,7 +99,9 @@ function AddUser() {
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
               <label htmlFor="password" className="text-sm text-gray-500">
                 Password*
-                <span className="text-xs text-gray-400 ml-1">(min 6 characters)</span>
+                <span className="text-xs text-gray-400 ml-1">
+                  (min 6 characters)
+                </span>
               </label>
               <input
                 id="password"
@@ -172,7 +182,15 @@ function AddUser() {
   );
 }
 
-function EditableField({ label, name, type = 'text', value, onChange, required = false, ...props }) {
+function EditableField({
+  label,
+  name,
+  type = "text",
+  value,
+  onChange,
+  required = false,
+  ...props
+}) {
   return (
     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
       <label htmlFor={name} className="text-sm text-gray-500">

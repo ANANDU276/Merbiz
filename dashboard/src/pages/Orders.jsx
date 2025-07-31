@@ -365,17 +365,16 @@ function ReturnStatusSelector({ currentStatus, orderId, onStatusChange }) {
     setStatus(newStatus);
     setLoading(true);
     try {
-
       await axios.put(`${API_BASE_URL}/${orderId}/return/status`, {
         status: newStatus,
       });
       console.log(newStatus);
-      
+
       onStatusChange(orderId, newStatus);
     } catch (err) {
       console.error("Failed to update return status", err);
       alert("Return status update failed.");
-      
+
       setStatus(currentStatus);
     } finally {
       setLoading(false);
@@ -393,10 +392,9 @@ function ReturnStatusSelector({ currentStatus, orderId, onStatusChange }) {
         disabled={loading}
       >
         <option value="Pending">Pending</option>
-          <option value="Processing">Processing</option>
+        <option value="Processing">Processing</option>
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
-      
       </select>
       {loading && <FiRefreshCw className="animate-spin h-4 w-4" />}
     </div>

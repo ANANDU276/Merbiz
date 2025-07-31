@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 function UserDetail() {
   const { id } = useParams();
@@ -8,12 +8,11 @@ function UserDetail() {
   const [error, setError] = useState("");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
 
-
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/${id}`);
-        if (!res.ok) throw new Error('User not found');
+        if (!res.ok) throw new Error("User not found");
         const data = await res.json();
         setUser(data);
       } catch (err) {
@@ -26,9 +25,11 @@ function UserDetail() {
     fetchUser();
   }, [id]);
 
-  if (loading) return <div className="p-8 text-center text-gray-600">Loading...</div>;
+  if (loading)
+    return <div className="p-8 text-center text-gray-600">Loading...</div>;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
-  if (!user) return <div className="p-8 text-center text-gray-600">No user data</div>;
+  if (!user)
+    return <div className="p-8 text-center text-gray-600">No user data</div>;
 
   return (
     <div className="p-6 md:p-10 bg-gray-50 min-h-screen">
@@ -45,10 +46,16 @@ function UserDetail() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <DetailCard title="Email" value={user.email} />
-          <DetailCard title="Location" value={user.location || 'N/A'} />
+          <DetailCard title="Location" value={user.location || "N/A"} />
           <DetailCard title="Orders" value={user.orders} />
-          <DetailCard title="Total Spent" value={`$${user.totalSpent?.toFixed(2)}`} />
-          <DetailCard title="Member Since" value={new Date(user.joinDate).toLocaleDateString()} />
+          <DetailCard
+            title="Total Spent"
+            value={`$${user.totalSpent?.toFixed(2)}`}
+          />
+          <DetailCard
+            title="Member Since"
+            value={new Date(user.joinDate).toLocaleDateString()}
+          />
         </div>
 
         <div className="flex space-x-3">

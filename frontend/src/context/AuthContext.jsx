@@ -42,7 +42,6 @@ export const AuthProvider = ({ children }) => {
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
       console.log("Auth token set after login");
-
     } catch (err) {
       console.error("Login failed:", err.response?.data || err.message);
       throw err;
