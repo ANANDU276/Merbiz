@@ -17,7 +17,7 @@ function Users() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const usersPerPage = 10;
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USERS;
 
   // Fetch users from backend
   const fetchUsers = async () => {
