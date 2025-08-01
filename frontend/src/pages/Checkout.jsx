@@ -273,152 +273,124 @@ const Checkout = () => {
     };
 
     // Handle different payment methods
-if (form.paymentMethod === "Cash on Delivery") {
-  const orderData = {
-    ...baseOrderData,
-    paymentStatus: "Cash on Delivery",
-  };
+    if (form.paymentMethod === "Cash on Delivery") {
+      const orderData = {
+        ...baseOrderData,
+        paymentStatus: "Cash on Delivery",
+      };
 
-  try {
-    await createOrder(orderData);
-    clearCart();
-    localStorage.removeItem("cart");
-
-    await Swal.fire({
-      icon: "success",
-      title: "Order Placed!",
-      text: "Your order has been placed successfully with Cash on Delivery.",
-      confirmButtonColor: "#3399cc",
-    });
-
-    navigate("/ordersuccess", { state: { order: orderData } });
-  } catch (err) {
-    console.error("Order error:", err);
-    await Swal.fire({
-      icon: "error",
-      title: "Order Failed",
-      text: "Failed to place order. Please try again.",
-      confirmButtonColor: "#3399cc",
-    });
-  }
-} else if (form.paymentMethod === "Online Payment") {
-  try {
-    const res = await fetch(`${API_BASE_URL}/create-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ total }),
-    });
-
-    // CRITICAL FIX: Check for a successful response before parsing JSON.
-    // This prevents the "Unexpected end of JSON input" error.
-    if (!res.ok) {
-      // If the response is not OK, assume a server error and try to get a message.
-      let errorText = "Failed to create order on server.";
       try {
-        const errorData = await res.json();
-        errorText = errorData.error || errorData.details || errorText;
-      } catch (e) {
-        // If the response is not even valid JSON, use a generic message.
-        console.error("Server returned a non-JSON error response.", e);
+        await createOrder(orderData);
+        clearCart();
+        localStorage.removeItem("cart");
+
+        await Swal.fire({
+          icon: "success",
+          title: "Order Placed!",
+          text: "Your order has been placed successfully with Cash on Delivery.",
+          confirmButtonColor: "#3399cc",
+        });
+
+        navigate("/ordersuccess", { state: { order: orderData } });
+      } catch (err) {
+        console.error("Order error:", err);
+        await Swal.fire({
+          icon: "error",
+          title: "Order Failed",
+          text: "Failed to place order. Please try again.",
+          confirmButtonColor: "#3399cc",
+        });
       }
-      throw new Error(errorText);
-    }
+    } else if (form.paymentMethod === "Online Payment") {
+      try {
+        const res = await fetch(`${API_BASE_URL}/create-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ total }),
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    const options = {
-      key: "rzp_test_McyqweXXfGvPEA",
-      amount: data.amount,
-      currency: "INR",
-      name: "Your Store Name",
-      description: "Order Payment",
-      order_id: data.id,
-      handler: async function (response) {
-        try {
-          const verifyRes = await fetch(`${API_BASE_URL}/verify-payment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }),
-          });
-
-          // CRITICAL FIX: Check for a successful response on verification as well.
-          if (!verifyRes.ok) {
-            let errorText = "Failed to verify payment on server.";
+        const options = {
+          key: "rzp_test_McyqweXXfGvPEA",
+          amount: data.amount,
+          currency: "INR",
+          name: "Your Store Name",
+          description: "Order Payment",
+          order_id: data.id,
+          handler: async function (response) {
             try {
-              const errorData = await verifyRes.json();
-              errorText = errorData.message || errorData.details || errorText;
-            } catch (e) {
-              console.error("Server returned a non-JSON verification response.", e);
+              const verifyRes = await fetch(`${API_BASE_URL}/verify-payment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+
+              const verifyData = await verifyRes.json();
+
+              if (verifyData.success) {
+                const orderData = {
+                  ...baseOrderData,
+                  paymentStatus: "Paid",
+                  paymentId: response.razorpay_payment_id,
+                };
+
+                await createOrder(orderData);
+                clearCart();
+                localStorage.removeItem("cart");
+
+                await Swal.fire({
+                  icon: "success",
+                  title: "Payment Verified!",
+                  text: "Your payment has been verified and order placed successfully.",
+                  confirmButtonColor: "#3399cc",
+                });
+
+                navigate("/ordersuccess");
+              } else {
+                await Swal.fire({
+                  icon: "error",
+                  title: "Verification Failed",
+                  text: "Payment verification failed. Order not placed.",
+                  confirmButtonColor: "#3399cc",
+                });
+              }
+            } catch (err) {
+              console.error("Verification error:", err);
+              await Swal.fire({
+                icon: "error",
+                title: "Verification Error",
+                text: "Could not verify payment. Please contact support.",
+                confirmButtonColor: "#3399cc",
+              });
             }
-            throw new Error(errorText);
-          }
+          },
+          prefill: {
+            name: `${form.firstName} ${form.lastName}`,
+            email: form.email,
+            contact: form.phone,
+          },
+          theme: {
+            color: "#3399cc",
+          },
+        };
 
-          const verifyData = await verifyRes.json();
-
-          if (verifyData.success) {
-            const orderData = {
-              ...baseOrderData,
-              paymentStatus: "Paid",
-              paymentId: response.razorpay_payment_id,
-            };
-
-            await createOrder(orderData);
-            clearCart();
-            localStorage.removeItem("cart");
-
-            await Swal.fire({
-              icon: "success",
-              title: "Payment Verified!",
-              text: "Your payment has been verified and order placed successfully.",
-              confirmButtonColor: "#3399cc",
-            });
-
-            navigate("/ordersuccess");
-          } else {
-            await Swal.fire({
-              icon: "error",
-              title: "Verification Failed",
-              text: "Payment verification failed. Order not placed.",
-              confirmButtonColor: "#3399cc",
-            });
-          }
-        } catch (err) {
-          console.error("Verification error:", err);
-          await Swal.fire({
-            icon: "error",
-            title: "Verification Error",
-            text: `Could not verify payment: ${err.message}. Please contact support.`,
-            confirmButtonColor: "#3399cc",
-          });
-        }
-      },
-      prefill: {
-        name: `${form.firstName} ${form.lastName}`,
-        email: form.email,
-        contact: form.phone,
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  } catch (err) {
-    console.error("Payment error:", err);
-    await Swal.fire({
-      icon: "error",
-      title: "Payment Error",
-      text: `Failed to initiate payment: ${err.message}. Please try again.`,
-      confirmButtonColor: "#3399cc",
-    });
-  }
-}
-
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      } catch (err) {
+        console.error("Payment error:", err);
+        await Swal.fire({
+          icon: "error",
+          title: "Payment Error",
+          text: "Failed to initiate payment. Please try again.",
+          confirmButtonColor: "#3399cc",
+        });
+      }
+    }
   };
 
   return (
