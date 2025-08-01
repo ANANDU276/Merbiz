@@ -303,6 +303,7 @@ const Checkout = () => {
       }
     } else if (form.paymentMethod === "Online Payment") {
       try {
+        console.log("Creating order with total:", total);
         const res = await fetch(`${API_BASE_URL}/create-order`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
