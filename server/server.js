@@ -20,7 +20,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:4173",
-  "https://merbiz.vercel.app/"
+  "https://merbiz.vercel.app"
 ];
 
 app.use((req, res, next) => {
