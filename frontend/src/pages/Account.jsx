@@ -24,6 +24,8 @@ const Account = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
+
 
   const navigate = useNavigate();
 
@@ -74,7 +76,7 @@ const Account = () => {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("http://localhost:5000/api/users/update", {
+      const res = await fetch(`${API_BASE_URL}/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

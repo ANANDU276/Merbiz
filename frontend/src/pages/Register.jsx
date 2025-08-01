@@ -17,6 +17,8 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_AUTH;
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,7 +68,7 @@ const Register = () => {
     
     setIsSubmitting(true);
     try {
-      await axios.post("http://localhost:5000/api/auth/register", {
+      await axios.post(`${API_BASE_URL}/register`, {
         name: form.name,
         email: form.email,
         password: form.password

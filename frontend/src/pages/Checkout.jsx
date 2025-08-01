@@ -31,6 +31,7 @@ const Checkout = () => {
   const taxRate = 0.08;
   const tax = (subtotal * taxRate).toFixed(2);
   const total = (subtotal + shipping + parseFloat(tax)).toFixed(2);
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_PAYMENT;
 
   // Form state
   const [form, setForm] = useState({
@@ -302,14 +303,11 @@ const Checkout = () => {
       }
     } else if (form.paymentMethod === "Online Payment") {
       try {
-        const res = await fetch(
-          "http://localhost:5000/api/payment/create-order",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ total }),
-          }
-        );
+        const res = await fetch(`${API_BASE_URL}/create-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ total }),
+        });
 
         const data = await res.json();
 
@@ -322,18 +320,15 @@ const Checkout = () => {
           order_id: data.id,
           handler: async function (response) {
             try {
-              const verifyRes = await fetch(
-                "http://localhost:5000/api/payment/verify-payment",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                  }),
-                }
-              );
+              const verifyRes = await fetch(`${API_BASE_URL}/verify-payment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
 
               const verifyData = await verifyRes.json();
 
