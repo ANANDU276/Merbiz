@@ -12,7 +12,7 @@ export const AddressProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
 
 
-  const API_BASE_URL = import.meta.env.  VITE_API_BASE_URL_ADDRESSES;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_ADDRESSES;
 
 
   const resetError = useCallback(() => setError(null), []);
