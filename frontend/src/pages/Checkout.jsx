@@ -301,97 +301,127 @@ const Checkout = () => {
           confirmButtonColor: "#3399cc",
         });
       }
-    } else if (form.paymentMethod === "Online Payment") {
-      try {
-        console.log("Creating order with total:", total);
-        const res = await fetch(`${API_BASE_URL}/create-order`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ total }),
-        });
+   } else if (form.paymentMethod === "Online Payment") {
+  try {
+    console.log("Creating order with total:", total);
+    
+    // Convert total to paise (Razorpay expects amount in smallest currency unit)
+    const amount = Math.round(parseFloat(total) * 100);
+    
+    const res = await fetch(`${API_BASE_URL}/create-order`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json" 
+      },
+      body: JSON.stringify({ amount }),
+      credentials: "include" // if you need to send cookies
+    });
 
-        const data = await res.json();
-
-        const options = {
-          key: "rzp_test_McyqweXXfGvPEA",
-          amount: data.amount,
-          currency: "INR",
-          name: "Your Store Name",
-          description: "Order Payment",
-          order_id: data.id,
-          handler: async function (response) {
-            try {
-              const verifyRes = await fetch(`${API_BASE_URL}/verify-payment`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                }),
-              });
-
-              const verifyData = await verifyRes.json();
-
-              if (verifyData.success) {
-                const orderData = {
-                  ...baseOrderData,
-                  paymentStatus: "Paid",
-                  paymentId: response.razorpay_payment_id,
-                };
-
-                await createOrder(orderData);
-                clearCart();
-                localStorage.removeItem("cart");
-
-                await Swal.fire({
-                  icon: "success",
-                  title: "Payment Verified!",
-                  text: "Your payment has been verified and order placed successfully.",
-                  confirmButtonColor: "#3399cc",
-                });
-
-                navigate("/ordersuccess");
-              } else {
-                await Swal.fire({
-                  icon: "error",
-                  title: "Verification Failed",
-                  text: "Payment verification failed. Order not placed.",
-                  confirmButtonColor: "#3399cc",
-                });
-              }
-            } catch (err) {
-              console.error("Verification error:", err);
-              await Swal.fire({
-                icon: "error",
-                title: "Verification Error",
-                text: "Could not verify payment. Please contact support.",
-                confirmButtonColor: "#3399cc",
-              });
-            }
-          },
-          prefill: {
-            name: `${form.firstName} ${form.lastName}`,
-            email: form.email,
-            contact: form.phone,
-          },
-          theme: {
-            color: "#3399cc",
-          },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } catch (err) {
-        console.error("Payment error:", err);
-        await Swal.fire({
-          icon: "error",
-          title: "Payment Error",
-          text: "Failed to initiate payment. Please try again.",
-          confirmButtonColor: "#3399cc",
-        });
-      }
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
+
+    const data = await res.json();
+
+    if (!data.id) {
+      throw new Error("Missing order ID in response");
+    }
+
+    const options = {
+      key: "rzp_test_McyqweXXfGvPEA",
+      amount: data.amount,
+      currency: "INR",
+      name: "Your Store Name",
+      description: "Order Payment",
+      order_id: data.id,
+      handler: async function (response) {
+        try {
+          const verifyRes = await fetch(`${API_BASE_URL}/verify-payment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+
+          if (!verifyRes.ok) {
+            throw new Error(`HTTP error! status: ${verifyRes.status}`);
+          }
+
+          const verifyData = await verifyRes.json();
+
+          if (verifyData.success) {
+            const orderData = {
+              ...baseOrderData,
+              paymentStatus: "Paid",
+              paymentId: response.razorpay_payment_id,
+            };
+
+            await createOrder(orderData);
+            clearCart();
+            localStorage.removeItem("cart");
+
+            await Swal.fire({
+              icon: "success",
+              title: "Payment Verified!",
+              text: "Your payment has been verified and order placed successfully.",
+              confirmButtonColor: "#3399cc",
+            });
+
+            navigate("/ordersuccess");
+          } else {
+            await Swal.fire({
+              icon: "error",
+              title: "Verification Failed",
+              text: verifyData.message || "Payment verification failed. Order not placed.",
+              confirmButtonColor: "#3399cc",
+            });
+          }
+        } catch (err) {
+          console.error("Verification error:", err);
+          await Swal.fire({
+            icon: "error",
+            title: "Verification Error",
+            text: err.message || "Could not verify payment. Please contact support.",
+            confirmButtonColor: "#3399cc",
+          });
+        }
+      },
+      prefill: {
+        name: `${form.firstName} ${form.lastName}`,
+        email: form.email,
+        contact: form.phone,
+      },
+      theme: {
+        color: "#3399cc",
+      },
+      modal: {
+        ondismiss: async function() {
+          await Swal.fire({
+            icon: "info",
+            title: "Payment Cancelled",
+            text: "You cancelled the payment process.",
+            confirmButtonColor: "#3399cc",
+          });
+        }
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    console.error("Payment error:", err);
+    await Swal.fire({
+      icon: "error",
+      title: "Payment Error",
+      text: err.message || "Failed to initiate payment. Please try again.",
+      confirmButtonColor: "#3399cc",
+    });
+  }
+}
   };
 
   return (
