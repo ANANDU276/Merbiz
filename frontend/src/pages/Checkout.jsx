@@ -303,29 +303,18 @@ const Checkout = () => {
       }
     } else if (form.paymentMethod === "Online Payment") {
       try {
-        // Convert total to paise (multiply by 100)
-        const amountInPaise = Math.round(parseFloat(total) * 100);
-        
-        if (isNaN(amountInPaise) || amountInPaise <= 0) {
-          throw new Error("Invalid total amount");
-        }
-
-        console.log("Creating order with amount:", amountInPaise);
+        console.log("Creating order with total:", total);
         const res = await fetch(`${API_BASE_URL}/create-order`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: amountInPaise }),
+          body: JSON.stringify({ total }),
         });
-
-        if (!res.ok) {
-          throw new Error("Failed to create payment order");
-        }
 
         const data = await res.json();
 
         const options = {
           key: "rzp_test_McyqweXXfGvPEA",
-          amount: amountInPaise,
+          amount: data.amount,
           currency: "INR",
           name: "Your Store Name",
           description: "Order Payment",
@@ -389,16 +378,6 @@ const Checkout = () => {
           theme: {
             color: "#3399cc",
           },
-          modal: {
-            ondismiss: async function() {
-              await Swal.fire({
-                icon: "info",
-                title: "Payment Cancelled",
-                text: "You cancelled the payment process.",
-                confirmButtonColor: "#3399cc",
-              });
-            }
-          }
         };
 
         const rzp = new window.Razorpay(options);
@@ -408,7 +387,7 @@ const Checkout = () => {
         await Swal.fire({
           icon: "error",
           title: "Payment Error",
-          text: err.message || "Failed to initiate payment. Please try again.",
+          text: "Failed to initiate payment. Please try again.",
           confirmButtonColor: "#3399cc",
         });
       }
