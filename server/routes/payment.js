@@ -10,7 +10,9 @@ router.post("/create-order", async (req, res) => {
 
   if (!RAZORPAY_KEY_ID || !RAZORPAY_SECRET) {
     console.error("❌ Missing Razorpay credentials in environment");
-    return res.status(500).json({ error: "Missing Razorpay credentials in .env file" });
+    return res.status(500).json({
+      error: "Missing Razorpay credentials in environment",
+    });
   }
 
   const razorpay = new Razorpay({
@@ -24,7 +26,9 @@ router.post("/create-order", async (req, res) => {
 
     if (!total || typeof total !== "number" || total <= 0) {
       console.warn("❌ Invalid total amount received:", total);
-      return res.status(400).json({ error: "Invalid or missing total amount" });
+      return res.status(400).json({
+        error: "Invalid or missing total amount",
+      });
     }
 
     const options = {
@@ -38,12 +42,20 @@ router.post("/create-order", async (req, res) => {
     const order = await razorpay.orders.create(options);
     console.log("✅ Razorpay order created:", order);
 
-    res.status(200).json(order);
+    return res.status(200).json(order);
   } catch (err) {
-    console.error("❌ Error creating Razorpay order:", err?.response?.data || err.message || err);
+    console.error("❌ Error creating Razorpay order:");
+    console.error("Type:", typeof err);
+    console.error("Full Error Object:", err);
+
+    const safeError =
+      err?.response?.data?.error?.description ||
+      err?.message ||
+      "Unknown error from Razorpay";
+
     res.status(500).json({
       error: "Failed to create Razorpay order",
-      details: err.message || "Unknown error",
+      details: safeError,
     });
   }
 });
@@ -54,7 +66,9 @@ router.post("/verify-payment", (req, res) => {
 
   if (!RAZORPAY_SECRET) {
     console.error("❌ Missing Razorpay secret in environment");
-    return res.status(500).json({ error: "Missing Razorpay secret in .env file" });
+    return res.status(500).json({
+      error: "Missing Razorpay secret in environment",
+    });
   }
 
   try {
@@ -77,14 +91,21 @@ router.post("/verify-payment", (req, res) => {
 
     if (expectedSignature === razorpay_signature) {
       console.log("✅ Payment verified successfully.");
-      res.status(200).json({ success: true, message: "Payment verified" });
+      return res.status(200).json({
+        success: true,
+        message: "Payment verified",
+      });
     } else {
       console.warn("❌ Invalid Razorpay signature");
-      res.status(400).json({ success: false, message: "Invalid signature" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid signature",
+      });
     }
   } catch (err) {
-    console.error("❌ Payment signature verification error:", err);
-    res.status(500).json({
+    console.error("❌ Payment verification failed:", err);
+
+    return res.status(500).json({
       error: "Failed to verify payment",
       details: err.message || "Unknown error",
     });
