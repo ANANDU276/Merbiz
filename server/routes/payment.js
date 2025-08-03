@@ -1,6 +1,7 @@
 const express = require("express");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
+const https = require("https");
 
 const router = express.Router();
 
@@ -8,16 +9,31 @@ const router = express.Router();
 router.post("/create-order", async (req, res) => {
   const { RAZORPAY_KEY_ID, RAZORPAY_SECRET } = process.env;
 
+  // Debug: Check if Razorpay ENV vars exist
+  console.log("🧪 Razorpay ENV check", {
+    key: RAZORPAY_KEY_ID?.slice(0, 5),
+    secret: RAZORPAY_SECRET ? "✅ exists" : "❌ missing",
+  });
+
   if (!RAZORPAY_KEY_ID || !RAZORPAY_SECRET) {
     console.error("❌ Missing Razorpay credentials in environment");
-    return res.status(500).json({
-      error: "Missing Razorpay credentials in environment",
-    });
+    return res.status(500).json({ error: "Missing Razorpay credentials in .env file" });
   }
 
+  // Debug: Check network access from Render to Razorpay
+  https.get("https://api.razorpay.com", (resp) => {
+    console.log("✅ Can reach Razorpay from Render");
+  }).on("error", (e) => {
+    console.error("❌ Cannot reach Razorpay from Render:", e.message);
+  });
+
+  // Razorpay instance with custom user-agent header
   const razorpay = new Razorpay({
     key_id: RAZORPAY_KEY_ID,
     key_secret: RAZORPAY_SECRET,
+    headers: {
+      "User-Agent": "RenderNodeClient/1.0" // workaround for SDK networking issues
+    }
   });
 
   try {
@@ -26,9 +42,7 @@ router.post("/create-order", async (req, res) => {
 
     if (!total || typeof total !== "number" || total <= 0) {
       console.warn("❌ Invalid total amount received:", total);
-      return res.status(400).json({
-        error: "Invalid or missing total amount",
-      });
+      return res.status(400).json({ error: "Invalid or missing total amount" });
     }
 
     const options = {
@@ -42,20 +56,12 @@ router.post("/create-order", async (req, res) => {
     const order = await razorpay.orders.create(options);
     console.log("✅ Razorpay order created:", order);
 
-    return res.status(200).json(order);
+    res.status(200).json(order);
   } catch (err) {
-    console.error("❌ Error creating Razorpay order:");
-    console.error("Type:", typeof err);
-    console.error("Full Error Object:", err);
-
-    const safeError =
-      err?.response?.data?.error?.description ||
-      err?.message ||
-      "Unknown error from Razorpay";
-
+    console.error("❌ Error creating Razorpay order:", err?.response?.data || err.message || err);
     res.status(500).json({
       error: "Failed to create Razorpay order",
-      details: safeError,
+      details: err.message || "Unknown error",
     });
   }
 });
@@ -66,9 +72,7 @@ router.post("/verify-payment", (req, res) => {
 
   if (!RAZORPAY_SECRET) {
     console.error("❌ Missing Razorpay secret in environment");
-    return res.status(500).json({
-      error: "Missing Razorpay secret in environment",
-    });
+    return res.status(500).json({ error: "Missing Razorpay secret in .env file" });
   }
 
   try {
@@ -91,21 +95,14 @@ router.post("/verify-payment", (req, res) => {
 
     if (expectedSignature === razorpay_signature) {
       console.log("✅ Payment verified successfully.");
-      return res.status(200).json({
-        success: true,
-        message: "Payment verified",
-      });
+      res.status(200).json({ success: true, message: "Payment verified" });
     } else {
       console.warn("❌ Invalid Razorpay signature");
-      return res.status(400).json({
-        success: false,
-        message: "Invalid signature",
-      });
+      res.status(400).json({ success: false, message: "Invalid signature" });
     }
   } catch (err) {
-    console.error("❌ Payment verification failed:", err);
-
-    return res.status(500).json({
+    console.error("❌ Payment signature verification error:", err);
+    res.status(500).json({
       error: "Failed to verify payment",
       details: err.message || "Unknown error",
     });
