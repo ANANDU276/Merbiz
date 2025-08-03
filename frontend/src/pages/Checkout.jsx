@@ -29,8 +29,17 @@ const Checkout = () => {
   );
   const shipping = 9.99;
   const taxRate = 0.08;
-  const tax = (subtotal * taxRate).toFixed(2);
-  const total = (subtotal + shipping + parseFloat(tax)).toFixed(2);
+
+  // --- FIX START ---
+  // Calculate tax and total as numbers for accurate calculations and sending to backend
+  const calculatedTax = subtotal * taxRate;
+  const calculatedTotal = subtotal + shipping + calculatedTax;
+
+  // Format for display purposes only
+  const displayTax = calculatedTax.toFixed(2);
+  const displayTotal = calculatedTotal.toFixed(2);
+  // --- FIX END ---
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_PAYMENT;
 
   // Form state
@@ -242,7 +251,16 @@ const Checkout = () => {
         showAddressLimitAlert();
         return;
       }
-      await handleSaveAddress();
+      // This will call addAddress which already has error handling.
+      // If addAddress fails, it will show a Swal error and we might want to prevent order placement
+      try {
+        await handleSaveAddress(); // Re-use the existing save address logic
+      } catch (saveError) {
+        console.error("Pre-order address save failed:", saveError);
+        // If saving address fails, decide if you want to stop the order or proceed.
+        // For now, let's stop to prevent orders with unsaved addresses if save was intended.
+        return;
+      }
     }
 
     // Prepare order data
@@ -268,8 +286,8 @@ const Checkout = () => {
       paymentMethod: form.paymentMethod,
       subtotal,
       shipping,
-      tax,
-      total,
+      tax: displayTax, // Store as string for consistency if tax is always displayed with 2 decimals
+      total: displayTotal, // Store as string for consistency if total is always displayed with 2 decimals
     };
 
     // Handle different payment methods
@@ -303,18 +321,32 @@ const Checkout = () => {
       }
     } else if (form.paymentMethod === "Online Payment") {
       try {
-        console.log("Creating order with total:", total);
+        console.log("Creating order with total:", calculatedTotal); // Send the NUMBER to backend
         const res = await fetch(`${API_BASE_URL}/create-order`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ total }),
+          body: JSON.stringify({ total: calculatedTotal }), // *** This is the core fix ***
         });
 
-        const data = await res.json();
+        // --- FIX START: Improved error handling for backend response ---
+        if (!res.ok) {
+          const errorBody = await res.json().catch(() => ({ message: "Unknown error" })); // Try to parse, or provide default
+          console.error("Backend error response during order creation:", errorBody);
+          await Swal.fire({
+            icon: "error",
+            title: "Payment Setup Failed",
+            text: errorBody.error || errorBody.message || "Failed to initiate payment due to a server error.",
+            confirmButtonColor: "#3399cc",
+          });
+          return; // Stop if backend returned an error
+        }
+        // --- FIX END ---
+
+        const data = await res.json(); // This will now correctly parse if `res.ok` is true
 
         const options = {
-          key: "rzp_test_McyqweXXfGvPEA",
-          amount: data.amount,
+          key: "rzp_test_McyqweXXfGvPEA", // Your Razorpay Key ID
+          amount: data.amount, // Amount from backend (already in paise)
           currency: "INR",
           name: "Your Store Name",
           description: "Order Payment",
@@ -330,6 +362,20 @@ const Checkout = () => {
                   razorpay_signature: response.razorpay_signature,
                 }),
               });
+
+              // --- FIX START: Improved error handling for verification response ---
+              if (!verifyRes.ok) {
+                const errorBody = await verifyRes.json().catch(() => ({ message: "Unknown verification error" }));
+                console.error("Backend error response during payment verification:", errorBody);
+                await Swal.fire({
+                  icon: "error",
+                  title: "Verification Failed",
+                  text: errorBody.message || "Payment verification failed due to a server error.",
+                  confirmButtonColor: "#3399cc",
+                });
+                return;
+              }
+              // --- FIX END ---
 
               const verifyData = await verifyRes.json();
 
@@ -356,7 +402,7 @@ const Checkout = () => {
                 await Swal.fire({
                   icon: "error",
                   title: "Verification Failed",
-                  text: "Payment verification failed. Order not placed.",
+                  text: verifyData.message || "Payment verification failed. Order not placed.",
                   confirmButtonColor: "#3399cc",
                 });
               }
@@ -383,7 +429,7 @@ const Checkout = () => {
         const rzp = new window.Razorpay(options);
         rzp.open();
       } catch (err) {
-        console.error("Payment error:", err);
+        console.error("Payment initiation error:", err);
         await Swal.fire({
           icon: "error",
           title: "Payment Error",
@@ -794,11 +840,11 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>₹{tax}</span>
+                    <span>₹{displayTax}</span> {/* Display formatted tax */}
                   </div>
                   <div className="flex justify-between font-semibold border-t pt-2">
                     <span>Total</span>
-                    <span>₹{total}</span>
+                    <span>₹{displayTotal}</span> {/* Display formatted total */}
                   </div>
                 </div>
 
