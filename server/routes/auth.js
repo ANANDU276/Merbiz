@@ -4,9 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-// Load JWT_SECRET from environment variables.
-// The dotenv package should be configured in your main server file (e.g., server.js).
-const JWT_SECRET = process.env.JWT_SECRET; 
+// Environment variable for JWT (add to .env)
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret"; // Fallback for dev
 
 // Register
 router.post("/register", async (req, res) => {
@@ -23,7 +22,7 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, 12); // Higher salt rounds (12)
 
     const user = new User({ 
       name, 
@@ -33,7 +32,7 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
-    // Generate token
+    // Generate token for auto-login after registration
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "1d" });
 
     res.status(201).json({ 
@@ -62,7 +61,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select("+password"); // Include password field
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -72,7 +71,6 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Generate token
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "1d" });
 
     res.json({ 

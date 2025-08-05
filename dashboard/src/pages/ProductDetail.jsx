@@ -9,7 +9,7 @@ import {
   FaStar,
   FaLayerGroup,
   FaTrash,
-  FaSpinner,
+  FaSpinner
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
@@ -21,18 +21,15 @@ export default function ProductDetail() {
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_PRODUCTS;
-
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${API_BASE_URL}/${id}`);
+        const res = await axios.get(`http://localhost:5000/api/products/${id}`);
         setProduct(res.data);
       } catch (err) {
         setError(
-          err.response?.data?.error ||
-            "Failed to load product. Please try again."
+          err.response?.data?.error || "Failed to load product. Please try again."
         );
         toast.error("Failed to load product details");
       } finally {
@@ -46,7 +43,7 @@ export default function ProductDetail() {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         setDeleting(true);
-        await axios.delete(`${API_BASE_URL}/${id}`);
+        await axios.delete(`http://localhost:5000/api/products/${id}`);
         toast.success("Product deleted successfully");
         navigate("/products");
       } catch (err) {
@@ -61,9 +58,7 @@ export default function ProductDetail() {
     return (
       <div className="flex flex-col items-center justify-center h-screen space-y-4">
         <FaSpinner className="animate-spin text-4xl text-blue-600" />
-        <p className="text-lg font-medium text-gray-600">
-          Loading product details...
-        </p>
+        <p className="text-lg font-medium text-gray-600">Loading product details...</p>
       </div>
     );
   }
@@ -120,7 +115,11 @@ export default function ProductDetail() {
               disabled={deleting}
               className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors disabled:opacity-70"
             >
-              {deleting ? <FaSpinner className="animate-spin" /> : <FaTrash />}{" "}
+              {deleting ? (
+                <FaSpinner className="animate-spin" />
+              ) : (
+                <FaTrash />
+              )}{" "}
               Delete
             </button>
           </div>
@@ -163,10 +162,7 @@ export default function ProductDetail() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <InfoRow
-                  icon={<FaTag className="text-blue-600" />}
-                  label="Price"
-                >
+                <InfoRow icon={<FaTag className="text-blue-600" />} label="Price">
                   <span className="font-mono">₹{product.price.toFixed(2)}</span>
                 </InfoRow>
 
@@ -179,23 +175,15 @@ export default function ProductDetail() {
                       {product.stock} available
                     </span>
                   ) : (
-                    <span className="text-red-600 font-medium">
-                      Out of stock
-                    </span>
+                    <span className="text-red-600 font-medium">Out of stock</span>
                   )}
                 </InfoRow>
 
-                <InfoRow
-                  icon={<FaTag className="text-blue-600" />}
-                  label="Category"
-                >
+                <InfoRow icon={<FaTag className="text-blue-600" />} label="Category">
                   <span className="capitalize">{product.category}</span>
                 </InfoRow>
 
-                <InfoRow
-                  icon={<FaStar className="text-blue-600" />}
-                  label="Rating"
-                >
+                <InfoRow icon={<FaStar className="text-blue-600" />} label="Rating">
                   <div className="flex items-center gap-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (

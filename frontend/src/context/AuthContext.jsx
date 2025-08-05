@@ -8,8 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_AUTH;
-
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
@@ -28,7 +26,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/login`, {
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
         email,
         password,
       });
@@ -42,6 +40,7 @@ export const AuthProvider = ({ children }) => {
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
       console.log("Auth token set after login");
+
     } catch (err) {
       console.error("Login failed:", err.response?.data || err.message);
       throw err;
@@ -50,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      await axios.post(`${API_BASE_URL}/register`, {
+      await axios.post("http://localhost:5000/api/auth/register", {
         name,
         email,
         password,

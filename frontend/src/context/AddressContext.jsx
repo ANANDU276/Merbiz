@@ -11,9 +11,7 @@ export const AddressProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const { user } = useContext(AuthContext);
 
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_ADDRESSES;
-
+  const API_BASE_URL = 'http://localhost:5000/api';
 
   const resetError = useCallback(() => setError(null), []);
 
@@ -42,7 +40,7 @@ export const AddressProvider = ({ children }) => {
     setLoading(true);
     resetError();
     try {
-      const { data } = await axios.get(`${API_BASE_URL}`, {
+      const { data } = await axios.get(`${API_BASE_URL}/addresses`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
@@ -72,7 +70,7 @@ export const AddressProvider = ({ children }) => {
         throw new Error('Address limit reached (max 2)');
       }
 
-      const { data } = await axios.post(`${API_BASE_URL}`, addressData, {
+      const { data } = await axios.post(`${API_BASE_URL}/addresses`, addressData, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -96,7 +94,7 @@ export const AddressProvider = ({ children }) => {
     setLoading(true);
     resetError();
     try {
-      const { data } = await axios.put(`${API_BASE_URL}/${id}`, addressData, {
+      const { data } = await axios.put(`${API_BASE_URL}/addresses/${id}`, addressData, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -136,7 +134,7 @@ export const AddressProvider = ({ children }) => {
         return false;
       }
 
-      await axios.delete(`${API_BASE_URL}/${id}`, {
+      await axios.delete(`${API_BASE_URL}/addresses/${id}`, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -160,7 +158,7 @@ export const AddressProvider = ({ children }) => {
     setLoading(true);
     resetError();
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/${id}/default`, {}, {
+      const { data } = await axios.patch(`${API_BASE_URL}/addresses/${id}/default`, {}, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

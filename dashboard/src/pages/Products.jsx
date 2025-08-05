@@ -10,7 +10,9 @@ import {
   FaFileExport,
 } from "react-icons/fa";
 
-import DefaultProductImage from "../assets/default-product-image.jpg";
+import DefaultProductImage  from "../assets/default-product-image.jpg"
+
+
 
 function Products() {
   const [allProducts, setAllProducts] = useState([]);
@@ -18,12 +20,11 @@ function Products() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 10;
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_PRODUCTS;
 
   // Fetch products from backend
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}`);
+      const response = await axios.get("http://localhost:5000/api/products");
       setAllProducts(response.data);
       setProducts(response.data);
     } catch (error) {
@@ -32,17 +33,16 @@ function Products() {
   };
 
   // Delete product handler
-  const handleDelete = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?"))
-      return;
-    try {
-      await axios.delete(`${API_BASE_URL}/${productId}`);
-      setAllProducts((prev) => prev.filter((p) => p._id !== productId));
-    } catch (error) {
-      console.error("Failed to delete product", error);
-      alert("Failed to delete product.");
-    }
-  };
+const handleDelete = async (productId) => {
+  if (!window.confirm("Are you sure you want to delete this product?")) return;
+  try {
+    await axios.delete(`http://localhost:5000/api/products/${productId}`);
+    setAllProducts((prev) => prev.filter((p) => p._id !== productId));
+  } catch (error) {
+    console.error("Failed to delete product", error);
+    alert("Failed to delete product.");
+  }
+};
 
   useEffect(() => {
     fetchProducts();
@@ -207,10 +207,7 @@ function Products() {
                           <RatingDisplay rating={product.rating} />
                         </td>
                         <td className="px-6 py-4 text-right text-sm font-medium">
-                          <ActionButtons
-                            productId={product._id}
-                            onDelete={handleDelete}
-                          />
+                       <ActionButtons productId={product._id} onDelete={handleDelete} />
                         </td>
                       </tr>
                     );
@@ -330,6 +327,7 @@ function ActionButtons({ productId, onDelete }) {
     </div>
   );
 }
+
 
 function Pagination({
   currentPage,

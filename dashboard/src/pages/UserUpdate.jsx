@@ -1,31 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { FaSpinner, FaSave, FaTimes } from "react-icons/fa";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { FaSpinner, FaSave, FaTimes } from 'react-icons/fa';
 
 function UserUpdate() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState({
-    name: "",
-    email: "",
-    location: "",
+    name: '',
+    email: '',
+    location: '',
     orders: 0,
     totalSpent: 0,
-    joinDate: new Date().toISOString(),
+    joinDate: new Date().toISOString()
   });
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER;
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/${id}`);
+        const res = await axios.get(`http://localhost:5000/api/users/${id}`);
         setUser(res.data);
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch user");
+        setError(err.response?.data?.message || 'Failed to fetch user');
       } finally {
         setLoading(false);
       }
@@ -36,10 +35,9 @@ function UserUpdate() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser((prev) => ({
+    setUser(prev => ({
       ...prev,
-      [name]:
-        name === "orders" || name === "totalSpent" ? Number(value) : value,
+      [name]: name === 'orders' || name === 'totalSpent' ? Number(value) : value
     }));
   };
 
@@ -47,24 +45,23 @@ function UserUpdate() {
     e.preventDefault();
     setUpdating(true);
     try {
-      await axios.put(`${API_BASE_URL}/${id}`, user);
+      await axios.put(`http://localhost:5000/api/users/${id}`, user);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update user");
+      setError(err.response?.data?.message || 'Failed to update user');
     } finally {
       setUpdating(false);
     }
   };
 
   const handleCancel = () => {
-    navigate("/users");
+    navigate('/users');
   };
 
-  if (loading)
-    return (
-      <div className="p-8 text-center text-gray-600 flex justify-center items-center">
-        <FaSpinner className="animate-spin mr-2" /> Loading...
-      </div>
-    );
+  if (loading) return (
+    <div className="p-8 text-center text-gray-600 flex justify-center items-center">
+      <FaSpinner className="animate-spin mr-2" /> Loading...
+    </div>
+  );
 
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
@@ -73,7 +70,7 @@ function UserUpdate() {
       <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6 md:p-8">
         <div className="flex items-center space-x-4 mb-6">
           <div className="h-14 w-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
-            {user.name?.charAt(0) || "U"}
+            {user.name?.charAt(0) || 'U'}
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-800">Update User</h1>
@@ -165,15 +162,7 @@ function UserUpdate() {
   );
 }
 
-function EditableField({
-  label,
-  name,
-  type = "text",
-  value,
-  onChange,
-  required = false,
-  ...props
-}) {
+function EditableField({ label, name, type = 'text', value, onChange, required = false, ...props }) {
   return (
     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
       <label htmlFor={name} className="text-sm text-gray-500">

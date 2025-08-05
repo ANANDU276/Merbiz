@@ -3,7 +3,7 @@ import axios from "axios";
 import AuthContext from "./AuthContext";
 
 const CartContext = createContext();
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_CART;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const CartProvider = ({ children }) => {
   const { user, loading: authLoading } = useContext(AuthContext);
